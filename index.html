@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#111827" />
+<link rel="manifest" href="manifest.webmanifest" />
+<title>Daily Reset</title>
+<style>
+  :root{--bg:#0b1020;--card:#121a2e;--soft:#1c2843;--text:#f5f7fb;--muted:#a7b0c0;--accent:#76e4b3;--accent2:#7db2ff;--danger:#ff8a8a;--shadow:0 12px 35px rgba(0,0,0,.25)}
+  *{box-sizing:border-box} body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,#0b1020,#0e1425 55%,#0b1020);color:var(--text);min-height:100vh}
+  .wrap{max-width:820px;margin:auto;padding:18px 16px 90px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin:6px 0 18px}.title h1{margin:0;font-size:28px;letter-spacing:-.5px}.title p{margin:5px 0 0;color:var(--muted);font-size:14px}.pill{background:var(--soft);padding:8px 12px;border-radius:999px;color:var(--accent);font-weight:700;font-size:13px;white-space:nowrap}
+  .hero{background:linear-gradient(135deg,#17213a,#111a30);border:1px solid #243252;border-radius:24px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}.row{display:flex;gap:12px;align-items:center;justify-content:space-between}.progress{height:14px;background:#0d1426;border-radius:999px;overflow:hidden;margin:12px 0}.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:.25s}.big{font-size:34px;font-weight:800}.muted{color:var(--muted)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.card{background:var(--card);border:1px solid #22304e;border-radius:20px;padding:16px;box-shadow:var(--shadow)}.card h3{margin:0 0 12px;font-size:17px}.stat{font-size:27px;font-weight:800}.small{font-size:12px;color:var(--muted)}
+  .section{margin-top:18px}.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.section-title h2{font-size:18px;margin:0}.task{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--card);border:1px solid #22304e;border-radius:16px;padding:13px 14px;margin-bottom:10px}.task.done{opacity:.65}.task.done .name{text-decoration:line-through}.check{width:26px;height:26px;border-radius:9px;border:2px solid #486183;background:#0d1426;display:grid;place-items:center;cursor:pointer;font-weight:900}.done .check{background:var(--accent);border-color:var(--accent);color:#0b1020}.name{font-weight:700}.meta{font-size:12px;color:var(--muted);margin-top:3px}.time{font-size:12px;color:var(--accent2);font-weight:700}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{appearance:none;border:0;background:var(--soft);color:var(--text);padding:10px 13px;border-radius:12px;font-weight:700;cursor:pointer}.btn.primary{background:var(--accent);color:#07120e}.btn.secondary{background:#203457}.btn.danger{background:#40202b;color:#ffc4c4}.btn.full{width:100%}.btn:active{transform:translateY(1px)}
+  .form{display:grid;grid-template-columns:1fr 120px;gap:10px}.input{width:100%;background:#0d1426;border:1px solid #2b3b60;border-radius:12px;padding:11px 12px;color:var(--text);outline:none}.input:focus{border-color:var(--accent2)}
+  canvas{width:100%;height:190px;background:#0d1426;border-radius:14px;border:1px solid #22304e}.tabs{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);display:flex;background:#11192c;border:1px solid #273555;border-radius:18px;padding:6px;box-shadow:var(--shadow);z-index:10}.tab{padding:10px 14px;border-radius:12px;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer}.tab.active{background:var(--soft);color:var(--text)}.page{display:none}.page.active{display:block}.note{font-size:12px;color:var(--muted);line-height:1.5}.quote{padding:14px;border-left:3px solid var(--accent);background:#0f1729;border-radius:10px;color:#dce5f6}.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-20px);background:#19243c;color:white;padding:10px 14px;border-radius:12px;opacity:0;pointer-events:none;transition:.2s;z-index:99;border:1px solid #2c3b5d}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media(max-width:620px){.grid{grid-template-columns:1fr 1fr}.form{grid-template-columns:1fr 105px}.top{align-items:center}.title h1{font-size:24px}.hero{padding:17px}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="wrap">
+  <div class="top">
+    <div class="title"><h1>Daily Reset</h1><p id="dateLabel"></p></div>
+    <div class="pill" id="streakPill">🔥 0 day streak</div>
+  </div>
+
+  <div id="today" class="page active">
+    <div class="hero">
+      <div class="row"><div><div class="muted">Today’s completion</div><div class="big" id="progressText">0%</div></div><div class="muted" id="taskCount">0/0 done</div></div>
+      <div class="progress"><div id="progressBar"></div></div>
+      <div class="quote">Keep the day simple: sleep well, eat enough, train, learn, read.</div>
+    </div>
+    <div class="grid">
+      <div class="card"><h3>Sleep</h3><div class="stat"><span id="sleepStat">—</span><span class="small"> h</span></div><div class="small">Goal: 7.5–9 h</div></div>
+      <div class="card"><h3>Water</h3><div class="stat"><span id="waterStat">0</span><span class="small"> glasses</span></div><div class="actions" style="margin-top:9px"><button class="btn" onclick="changeWater(-1)">−</button><button class="btn primary" onclick="changeWater(1)">+1</button></div></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><h2>Daily routine</h2><button class="btn" onclick="resetToday()">Reset today</button></div>
+      <div id="taskList"></div>
+    </div>
+  </div>
+
+  <div id="progress" class="page">
+    <div class="grid">
+      <div class="card"><h3>Current streak</h3><div class="stat" id="streakStat">0</div><div class="small">days ≥ 70% complete</div></div>
+      <div class="card"><h3>7-day average</h3><div class="stat" id="avgStat">0%</div><div class="small">routine completion</div></div>
+    </div>
+    <div class="section card"><h3>Weight progress</h3><canvas id="weightChart" width="720" height="240"></canvas><div class="form" style="margin-top:12px"><input class="input" id="weightInput" inputmode="decimal" placeholder="Weight (kg)"><button class="btn primary" onclick="addWeight()">Add</button></div><div class="note" style="margin-top:8px">Aim for a slow, steady gain rather than chasing the scale day to day.</div></div>
+    <div class="section card"><h3>Recent days</h3><div id="historyList"></div></div>
+  </div>
+
+  <div id="settings" class="page">
+    <div class="card"><h3>Today’s inputs</h3><label class="small">Sleep last night (hours)</label><input class="input" id="sleepInput" inputmode="decimal" placeholder="e.g. 8" style="margin:7px 0 12px"><button class="btn primary full" onclick="saveSleep()">Save sleep</button></div>
+    <div class="section card"><h3>Reminder notifications</h3><p class="note">Set a reminder time for each routine item. Browser notifications work best when this app is installed and has notification permission. On some phones, reminders may not fire if the app is fully closed.</p><button class="btn secondary full" onclick="enableNotifications()">Enable notifications</button><div id="reminderSettings" style="margin-top:12px"></div></div>
+    <div class="section card"><h3>Data</h3><div class="actions"><button class="btn" onclick="exportData()">Export backup</button><button class="btn danger" onclick="clearAll()">Clear all data</button></div></div>
+    <div class="section card"><h3>Install on phone</h3><p class="note">Android/Chrome: open the browser menu → “Add to Home screen” or “Install app”. iPhone/Safari: Share → “Add to Home Screen”.</p><button id="installBtn" class="btn primary full" style="display:none">Install app</button></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-page="today">Today</div>
+  <div class="tab" data-page="progress">Progress</div>
+  <div class="tab" data-page="settings">Settings</div>
+</div>
+
+<script>
+const DEFAULT_TASKS=[
+ {id:'sun',name:'Morning sunlight / walk',note:'10–15 min outside',time:'07:30'},
+ {id:'breakfast',name:'Protein-rich breakfast',note:'Milk/curd + paneer/tofu/chilla + fruit',time:'08:00'},
+ {id:'lunch',name:'Proper lunch',note:'Dal/rajma/chole + roti/rice + curd + veg',time:'13:30'},
+ {id:'workout',name:'Workout / movement',note:'45–60 min strength or active recovery',time:'17:30'},
+ {id:'snack',name:'Post-workout / evening snack',note:'Milk/curd + banana / paneer / soy',time:'18:45'},
+ {id:'python',name:'Python learning',note:'60 min focused practice',time:'19:15'},
+ {id:'dinner',name:'Protein-rich dinner',note:'Paneer/tofu/soy/dal + carbs + vegetables',time:'20:30'},
+ {id:'reading',name:'Read a book',note:'20–30 min, one book at a time',time:'22:00'},
+ {id:'winddown',name:'Phone-down wind-down',note:'Prepare for sleep',time:'22:30'},
+ {id:'sleep',name:'Sleep on time',note:'Target 7.5–9 hours',time:'23:00'}
+];
+const key='daily-reset-v1';
+let state=JSON.parse(localStorage.getItem(key)||'null')||{tasks:DEFAULT_TASKS,days:{},weights:[],reminders:{},lastNotified:{}};
+if(!state.tasks) state.tasks=DEFAULT_TASKS;
+function save(){localStorage.setItem(key,JSON.stringify(state));}
+function dateKey(d=new Date()){return d.toISOString().slice(0,10)}
+function getDay(k=dateKey()){if(!state.days[k]) state.days[k]={done:{},water:0,sleep:null};return state.days[k]}
+function esc(s){return String(s).replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function render(){
+ const now=new Date(); document.getElementById('dateLabel').textContent=now.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
+ const d=getDay(); const done=state.tasks.filter(t=>d.done[t.id]).length; const pct=state.tasks.length?Math.round(done/state.tasks.length*100):0;
+ document.getElementById('progressText').textContent=pct+'%'; document.getElementById('progressBar').style.width=pct+'%'; document.getElementById('taskCount').textContent=`${done}/${state.tasks.length} done`;
+ document.getElementById('sleepStat').textContent=d.sleep??'—'; document.getElementById('waterStat').textContent=d.water||0;
+ document.getElementById('taskList').innerHTML=state.tasks.map(t=>`<div class="task ${d.done[t.id]?'done':''}"><div class="check" onclick="toggleTask('${t.id}')">${d.done[t.id]?'✓':''}</div><div><div class="name">${esc(t.name)}</div><div class="meta">${esc(t.note)}</div></div><div class="time">${esc(state.reminders[t.id]||t.time||'')}</div></div>`).join('');
+ const streak=calcStreak(); document.getElementById('streakPill').textContent=`🔥 ${streak} day${streak===1?'':'s'} streak`;document.getElementById('streakStat').textContent=streak;
+ document.getElementById('avgStat').textContent=sevenDayAvg()+'%'; renderHistory(); renderReminders(); drawWeight(); save();
+}
+function toggleTask(id){const d=getDay();d.done[id]=!d.done[id];save();render();toast(d.done[id]?'Done ✓':'Marked incomplete')}
+function changeWater(n){const d=getDay();d.water=Math.max(0,(d.water||0)+n);save();render()}
+function saveSleep(){const v=parseFloat(document.getElementById('sleepInput').value);if(!isFinite(v)||v<=0||v>24)return toast('Enter valid sleep hours');getDay().sleep=v;document.getElementById('sleepInput').value='';save();render();toast('Sleep saved')}
+function resetToday(){if(!confirm('Reset today’s checklist?'))return;state.days[dateKey()]={done:{},water:0,sleep:getDay().sleep};save();render()}
+function completion(k){const d=state.days[k];if(!d)return 0;return state.tasks.length?Math.round(state.tasks.filter(t=>d.done&&d.done[t.id]).length/state.tasks.length*100):0}
+function calcStreak(){let s=0;let dt=new Date();for(let i=0;i<365;i++){const k=dateKey(dt);if(completion(k)>=70)s++;else if(i===0&&completion(k)===0){}else break;dt.setDate(dt.getDate()-1)}return s}
+function sevenDayAvg(){let sum=0;let dt=new Date();for(let i=0;i<7;i++){sum+=completion(dateKey(dt));dt.setDate(dt.getDate()-1)}return Math.round(sum/7)}
+function renderHistory(){let html='';let dt=new Date();for(let i=0;i<7;i++){const k=dateKey(dt);html+=`<div class="row" style="padding:9px 0;border-bottom:1px solid #22304e"><span>${dt.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})}</span><strong>${completion(k)}%</strong></div>`;dt.setDate(dt.getDate()-1)}document.getElementById('historyList').innerHTML=html}
+function addWeight(){const v=parseFloat(document.getElementById('weightInput').value);if(!isFinite(v)||v<25||v>250)return toast('Enter a valid weight');state.weights.push({date:dateKey(),value:v});state.weights=state.weights.slice(-60);document.getElementById('weightInput').value='';save();drawWeight();toast('Weight added')}
+function drawWeight(){const c=document.getElementById('weightChart');if(!c)return;const ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#0d1426';ctx.fillRect(0,0,c.width,c.height);const arr=state.weights.slice(-20);ctx.font='14px system-ui';ctx.fillStyle='#a7b0c0';if(arr.length<2){ctx.fillText('Add at least two weight entries to see a trend.',24,36);return}const vals=arr.map(x=>x.value);let min=Math.min(...vals),max=Math.max(...vals);if(max-min<1){min-=.5;max+=.5}const pad=34;ctx.strokeStyle='#263657';ctx.lineWidth=1;for(let i=0;i<4;i++){const y=pad+(c.height-2*pad)*i/3;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(c.width-pad,y);ctx.stroke()}ctx.strokeStyle='#76e4b3';ctx.lineWidth=4;ctx.beginPath();arr.forEach((p,i)=>{const x=pad+(c.width-2*pad)*(i/(arr.length-1));const y=c.height-pad-(p.value-min)/(max-min)*(c.height-2*pad);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();ctx.fillStyle='#f5f7fb';ctx.fillText(`${arr[0].value.toFixed(1)} kg`,pad,c.height-10);ctx.fillText(`${arr[arr.length-1].value.toFixed(1)} kg`,c.width-pad-60,c.height-10)}
+function renderReminders(){const el=document.getElementById('reminderSettings');el.innerHTML=state.tasks.map(t=>`<div class="row" style="margin:8px 0"><span class="small" style="max-width:65%">${esc(t.name)}</span><input class="input" type="time" style="width:112px" value="${esc(state.reminders[t.id]||t.time||'')}" onchange="setReminder('${t.id}',this.value)"></div>`).join('')}
+function setReminder(id,v){state.reminders[id]=v;save();render()}
+async function enableNotifications(){if(!('Notification'in window))return toast('Notifications not supported here');const p=await Notification.requestPermission();toast(p==='granted'?'Notifications enabled':'Permission not granted')}
+function checkReminders(){if(!('Notification'in window)||Notification.permission!=='granted')return;const now=new Date();const hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0'),k=dateKey();state.tasks.forEach(t=>{const tm=state.reminders[t.id]||t.time;if(tm===`${hh}:${mm}`&&!getDay().done[t.id]){const nk=k+'|'+t.id+'|'+tm;if(state.lastNotified[nk])return;new Notification(t.name,{body:t.note||'Time for your routine item.'});state.lastNotified[nk]=true;save()}})}
+setInterval(checkReminders,30000);
+function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='daily-reset-backup.json';a.click();URL.revokeObjectURL(a.href)}
+function clearAll(){if(!confirm('This will permanently clear all local progress. Continue?'))return;localStorage.removeItem(key);location.reload()}
+function toast(msg){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1800)}
+[...document.querySelectorAll('.tab')].forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab,.page').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById(t.dataset.page).classList.add('active');if(t.dataset.page==='progress')drawWeight()});
+let deferredPrompt;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.getElementById('installBtn');b.style.display='block';b.onclick=async()=>{deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;b.style.display='none'}});
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+render();checkReminders();
+</script>
+</body>
+</html>
